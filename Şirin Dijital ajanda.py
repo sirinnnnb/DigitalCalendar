@@ -1,8 +1,12 @@
+import datetime
 import tkinter as tk
 from tkinter import messagebox
 from datetime import date, timedelta
 from tkinter import *
 import json
+from tkinter import simpledialog
+import winsound
+
 
 
 users = {
@@ -11,26 +15,27 @@ users = {
     "user2": "password2"
 }
 
-
 def login(self):
+        
+    
     username = self.username_entry.get()
     password = self.password_entry.get()
 
     if username in users and users[username] == password:
-            self.root.destroy()
-            calendar_app = CalendarApp()
-            root = tk.Tk() 
-            app = CalendarApp(root, username)
-            root.mainloop()    
+        self.root.destroy()
+        login.destroy()
+        CalendarApp()
+        calendar_app = CalendarApp(self.root)
+        self.root.mainloop()    
     else:
-            messagebox.showerror("Hata", "Geçersiz Kullanıcı adı veya Şifre.")
+        messagebox.showerror("Hata", "Geçersiz Kullanıcı adı veya Şifre.")
 
 
-# Ana pencere oluşturma
+
 root = tk.Tk()
 root.title("Dijital Ajanda")
 
-# Giriş yapma formu
+
 login_frame = tk.Frame(root)
 login_frame.pack(pady=20)
 
@@ -47,8 +52,6 @@ password_entry.grid(row=1, column=1)
 login_button = tk.Button(root, text="Giriş Yap", command=login)
 login_button.pack(pady=10)
 
-import tkinter as tk
-
 def register():
     name = name_entry.get()
     surname = surname_entry.get()
@@ -63,9 +66,9 @@ def register():
     users[username] = password
     with open ("users.json","w") as file :
         json.dump(users, file)
+    
 
 
-# Kayıt olma formu
 register_frame = tk.Frame(root)
 register_frame.pack(pady=20)
 
@@ -129,54 +132,56 @@ class CalendarApp:
         self.current_date = date.today()
         self.selected_date = self.current_date
 
-        self.calendar_frame = tk.Frame(self.root)
-        self.calendar_frame.grid(pady=10)
+        self.calendar_frame1 = tk.Frame(self.root)
+        self.calendar_frame1.grid(pady=10)
 
-        self.title_label = tk.Label(self.calendar_frame, text="Takvim", font=("Helvetica", 20))
+        self.title_label = tk.Label(self.calendar_frame1, text="Takvim", font=("Helvetica", 20))
         self.title_label.grid(row=0, column=1, columnspan=10)
 
-        self.previous_button = tk.Button(self.calendar_frame, text="Önceki", command=self.previous_month)
+        self.previous_button = tk.Button(self.calendar_frame1, text="Önceki", command=self.previous_month)
         self.previous_button.grid(row=1, column=0)
 
-        self.month_label = tk.Label(self.calendar_frame, text="")
+        self.month_label = tk.Label(self.calendar_frame1, text="")
         self.month_label.grid(row=1, column=1, columnspan=5)
 
-        self.next_button = tk.Button(self.calendar_frame, text="Sonraki", command=self.next_month)
+        self.next_button = tk.Button(self.calendar_frame1, text="Sonraki", command=self.next_month)
         self.next_button.grid(row=1, column=6)
 
-        self.jump_button = tk.Button(self.calendar_frame, text="Bugüne Git", command=self.go_to_today)
+        self.jump_button = tk.Button(self.calendar_frame1, text="Bugüne Git", command=self.go_to_today)
         self.load_events()
-        self.event_entry = None  
+        self.event_entry = tk.Entry(root,width=50)
         
-        self.frame = tk.Frame(self.root)
-        self.frame.grid(row=0, column=0, padx=10, pady=10)
+        self.frame2 = tk.Frame(self.root)
+        self.frame2.grid(row=0, column=0, padx=10, pady=10)
 
-        self.view_events_button = tk.Button(self.frame, text="Etkinlikleri Göster", command=self.view_events)
-        self.view_events_button.grid(row=2, column=3, sticky=tk.SE, padx=5, pady=10)
-        
-        self.btn_update_event = Button(self.frame, text="Etkinlik Güncelle", command=self.update_event)
-        self.btn_update_event.grid(row=2, column=3, padx=5)
-
-        self.btn_delete_event = Button(self.frame, text="Etkinlik Sil", command=self.delete_event)
-        self.btn_delete_event.grid(row=2, column=3, padx=6)
-
-        
-
+    
         self.days_labels = []
         days = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
         for i in range(7):
-            label = tk.Label(self.calendar_frame, text=days[i])
+            label = tk.Label(self.calendar_frame1, text=days[i])
             label.grid(row=2, column=i)
 
         self.cells = []
         for i in range(6):
             row = []
             for j in range(7):
-                cell = tk.Button(self.calendar_frame, width=8, height=4, command=lambda i=i, j=j: self.select_date(i, j))
+                cell = tk.Button(self.calendar_frame1, width=8, height=4, command=lambda i=i, j=j: self.select_date(i, j))
                 cell.grid(row=i+3, column=j)
                 row.append(cell)
             self.cells.append(row)
 
+        
+        # Create buttons
+        self.view_events_button = tk.Button(self.frame2, text="Etkinlik Göster", command=self.view_events)
+        self.update_event_button = tk.Button(self.frame2, text="Etkinlik Güncelle", command=self.update_event)
+        self.delete_event_button = tk.Button(self.frame2, text="Etkinlik Sil", command=self.delete_event)
+        self.set_reminder_button = tk.Button(self.frame2, text="Hatırlatıcı Ekle", command=self.set_reminder)
+
+    # Align buttons to the right side
+        self.view_events_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.update_event_button.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+        self.delete_event_button.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+        self.set_reminder_button.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
         self.update_calendar()
 
     def update_calendar(self):
@@ -241,7 +246,7 @@ class CalendarApp:
             messagebox.showerror("Hata", "Lütfen bir tarih seçin.")
 
     def save_event(self):
-        event = self.event_entry.get()  # Access event_entry from the instance attribute
+        event = self.event_entry.get()  
         self.events[str(self.selected_date)] = event  
         self.save_events_to_json()
         messagebox.showinfo("Etkinlik Eklendi", "Etkinlik başarıyla eklendi!")
@@ -255,11 +260,10 @@ class CalendarApp:
         
     def load_events(self):
         try:
-            # JSON dosyasını yükle (varsa)
+           
             with open("events.json", "r") as file:
                 self.events = json.load(file)
         except FileNotFoundError:
-            # JSON dosyası bulunamazsa veya boşsa, yeni bir liste oluştur
             self.events = []
             
             
@@ -286,7 +290,7 @@ class CalendarApp:
             selected_date = tk.simpledialog.askstring("Etkinlik Güncelle", "Güncellemek istediğiniz etkinliğin tarihini girin (YYYY-MM-DD):")
             if selected_date in self.events:
                 new_event = tk.simpledialog.askstring("Etkinlik Güncelle", "Yeni etkinliği girin:")
-                self.events[selected_date] = new_event
+                self.events[selected_date] = new_event  
                 self.save_events_to_json()
                 messagebox.showinfo("Bilgi", "Etkinlik güncellendi.")
             else:
@@ -297,22 +301,47 @@ class CalendarApp:
         if not self.events:
             messagebox.showinfo("Bilgi", "Takvimde hiç etkinlik yok.")
         else:
-            selected_date = tk.simpledialog.askstring("Etkinlik Sil", "Silmek istediğiniz etkinliğin tarihini girin (YYYY-MM-DD):")
+            selected_date = simpledialog.askstring("Etkinlik Güncelle", "Güncellemek istediğiniz etkinliğin tarihini girin (YYYY-MM-DD):")
             if selected_date in self.events:
                 del self.events[selected_date]
                 self.save_events_to_json()
                 messagebox.showinfo("Bilgi", "Etkinlik silindi.")
             else:
                 messagebox.showerror("Hata", "Belirtilen tarihe sahip bir etkinlik bulunamadı.")
+                
+    def set_reminder(self):
+        event = self.event_entry.get()
+        if event:
+            date_str = simpledialog.askstring("Hatırlatıcı Ekle", "Etkinlik Tarihini Girin (YYYY-MM-DD):")
+            time_str = simpledialog.askstring("Hatırlatıcı Ekle", "Etkinlik Saatini Girin (HH:MM):")
+
+            try:
+                event_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                event_time = datetime.strptime(time_str, "%H:%M").time()
+
+                reminder_datetime = datetime.combine(event_date, event_time)
+                current_datetime = datetime.now()
+
+                if reminder_datetime > current_datetime:
+                    time_delta = reminder_datetime - current_datetime
+                    seconds = time_delta.total_seconds()
+                    self.root.after(int(seconds * 1000), self.show_reminder, event)
+                    messagebox.showinfo("Hatırlatıcı Eklendi", "Hatırlatıcı başarıyla ayarlandı.")
+                else:
+                    messagebox.showerror("Hata", "Geçmiş bir tarih veya saat ayarlanamaz.")
+            except ValueError:
+                messagebox.showerror("Hata", "Geçersiz tarih veya saat formatı.")
+        else:
+            messagebox.showerror("Hata", "Etkinlik alanı boş olamaz.")
+
+    def show_reminder(self, event):
+        winsound.PlaySound("zil_sesi.wav", winsound.SND_FILENAME)
+        messagebox.showinfo("Hatırlatıcı", f"{event}\n\nŞimdi zamanı geldi!")
+
 
 
 if __name__ == "__main__":
     root = tk.Tk()
     calendar_app = CalendarApp(root)
-    calendar_app.load_events()
-    calendar_app.view_events()
     root.mainloop()
     
-root = tk.Tk()
-app = CalendarApp(root)
-root.mainloop()
